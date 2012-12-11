@@ -88,11 +88,11 @@ void Setup()
     glMaterialfv(GL_FRONT, GL_SPECULAR,  materialSpecular);
     glMaterialfv(GL_FRONT, GL_SHININESS, &shininess);
 
-    surfaceNormImg = new STImage(normalMap);
-    surfaceNormTex = new STTexture(surfaceNormImg);
+//    surfaceNormImg = new STImage(normalMap);
+//    surfaceNormTex = new STTexture(surfaceNormImg);
 
-    lightProbeImg = new STImage(lightProbe);
-    lightProbeTex = new STTexture(lightProbeImg);
+//    lightProbeImg = new STImage(lightProbe);
+//    lightProbeTex = new STTexture(lightProbeImg);
 
     shader = new STShaderProgram();
     shader->LoadVertexShader(vertexShader);
@@ -157,12 +157,12 @@ void DisplayCallback()
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 
     // Texture 2: light probe environment map
-    glActiveTexture(GL_TEXTURE1);
-    lightProbeTex->Bind();
+//    glActiveTexture(GL_TEXTURE1);
+//    lightProbeTex->Bind();
 
     // Texture 1: surface normal map
-    glActiveTexture(GL_TEXTURE0);
-    surfaceNormTex->Bind();
+//    glActiveTexture(GL_TEXTURE0);
+//    surfaceNormTex->Bind();
     
     // Bind the textures we've loaded into openGl to
     // the variable names we specify in the fragment
@@ -374,19 +374,19 @@ void TimerCallback(int i)
 
 void usage()
 {
-	printf("usage: ProgrammableShading vertShader fragShader lightProbeImg normalMapImg\n");
+	printf("usage: ProgrammableShading vertShader fragShader\n");
 	exit(0);
 }
 
 int main(int argc, char** argv)
 {
-	if (argc != 5)
+	if (argc != 3)
 		usage();
 
 	vertexShader   = std::string(argv[1]);
 	fragmentShader = std::string(argv[2]);
-	lightProbe     = std::string(argv[3]);
-	normalMap      = std::string(argv[4]);
+//	lightProbe     = std::string(argv[3]);
+//	normalMap      = std::string(argv[4]);
 
     //
     // Initialize GLUT.
