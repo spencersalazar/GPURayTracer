@@ -101,9 +101,9 @@ void DisplayCallback()
     // shader programs on anything we draw.
     shader->Bind();
 
-    shader->SetUniform("c", STVector3(0, 0, 2));
+    shader->SetUniform("c", STVector3(sinf(g_t*2*M_PI*0.25), 0, 2));
     shader->SetUniform("r", 0.5);
-    shader->SetUniform("L", STVector3(gWindowSizeX/2, gWindowSizeY, 2));
+    shader->SetUniform("L", STVector3(0.0, 1.0, 0.5));
     
     {
         // Draw a coplanar quadrilateral on the y=0 plane.
