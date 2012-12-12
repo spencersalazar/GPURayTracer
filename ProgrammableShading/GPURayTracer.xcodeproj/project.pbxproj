@@ -49,7 +49,7 @@
 		090E0F691662DBCE006AA727 /* lightprobe.frag */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; name = lightprobe.frag; path = kernels/lightprobe.frag; sourceTree = "<group>"; };
 		090E0F6A1662DBCE006AA727 /* phong.frag */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; name = phong.frag; path = kernels/phong.frag; sourceTree = "<group>"; };
 		090E0F741665C5CF006AA727 /* lpphong.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = lpphong.frag; path = kernels/lpphong.frag; sourceTree = "<group>"; };
-		8DD76F6C0486A84900D96B5E /* ProgrammableShading */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ProgrammableShading; sourceTree = BUILT_PRODUCTS_DIR; };
+		8DD76F6C0486A84900D96B5E /* GPURayTracer */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = GPURayTracer; sourceTree = BUILT_PRODUCTS_DIR; };
 		E019EAD40F436B9700EE6385 /* libst.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = libst.xcodeproj; path = ../libst/xcode/libst.xcodeproj; sourceTree = SOURCE_ROOT; };
 		E019EADE0F436BD800EE6385 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = /System/Library/Frameworks/GLUT.framework; sourceTree = "<absolute>"; };
 		E019EADF0F436BD800EE6385 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
@@ -108,7 +108,7 @@
 		1AB674ADFE9D54B511CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8DD76F6C0486A84900D96B5E /* ProgrammableShading */,
+				8DD76F6C0486A84900D96B5E /* GPURayTracer */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -131,9 +131,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		8DD76F620486A84900D96B5E /* ProgrammableShading */ = {
+		8DD76F620486A84900D96B5E /* GPURayTracer */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 1DEB923108733DC60010E9CD /* Build configuration list for PBXNativeTarget "ProgrammableShading" */;
+			buildConfigurationList = 1DEB923108733DC60010E9CD /* Build configuration list for PBXNativeTarget "GPURayTracer" */;
 			buildPhases = (
 				8DD76F640486A84900D96B5E /* Sources */,
 				8DD76F660486A84900D96B5E /* Frameworks */,
@@ -144,10 +144,10 @@
 			dependencies = (
 				E019EB510F43BCF700EE6385 /* PBXTargetDependency */,
 			);
-			name = ProgrammableShading;
+			name = GPURayTracer;
 			productInstallPath = "$(HOME)/bin";
 			productName = ImageProcessor;
-			productReference = 8DD76F6C0486A84900D96B5E /* ProgrammableShading */;
+			productReference = 8DD76F6C0486A84900D96B5E /* GPURayTracer */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -158,7 +158,7 @@
 			attributes = {
 				LastUpgradeCheck = 0450;
 			};
-			buildConfigurationList = 1DEB923508733DC60010E9CD /* Build configuration list for PBXProject "ProgrammableShading" */;
+			buildConfigurationList = 1DEB923508733DC60010E9CD /* Build configuration list for PBXProject "GPURayTracer" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
@@ -178,7 +178,7 @@
 			);
 			projectRoot = "";
 			targets = (
-				8DD76F620486A84900D96B5E /* ProgrammableShading */,
+				8DD76F620486A84900D96B5E /* GPURayTracer */,
 			);
 		};
 /* End PBXProject section */
@@ -228,7 +228,7 @@
 				);
 				INSTALL_PATH = /usr/local/bin;
 				LIBRARY_SEARCH_PATHS = /opt/local/lib;
-				PRODUCT_NAME = ProgrammableShading;
+				PRODUCT_NAME = GPURayTracer;
 			};
 			name = Debug;
 		};
@@ -241,7 +241,7 @@
 				GCC_MODEL_TUNING = G5;
 				INSTALL_PATH = /usr/local/bin;
 				LIBRARY_SEARCH_PATHS = /opt/local/lib;
-				PRODUCT_NAME = ProgrammableShading;
+				PRODUCT_NAME = GPURayTracer;
 			};
 			name = Release;
 		};
@@ -293,7 +293,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		1DEB923108733DC60010E9CD /* Build configuration list for PBXNativeTarget "ProgrammableShading" */ = {
+		1DEB923108733DC60010E9CD /* Build configuration list for PBXNativeTarget "GPURayTracer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1DEB923208733DC60010E9CD /* Debug */,
@@ -302,7 +302,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		1DEB923508733DC60010E9CD /* Build configuration list for PBXProject "ProgrammableShading" */ = {
+		1DEB923508733DC60010E9CD /* Build configuration list for PBXProject "GPURayTracer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1DEB923608733DC60010E9CD /* Debug */,

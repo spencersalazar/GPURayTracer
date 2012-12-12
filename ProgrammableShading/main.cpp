@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 //
 // Globals used by this application.
@@ -76,17 +77,6 @@ void DisplayCallback()
     
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-
-//    STVector3 trans = -mCameraTranslation;
-//    
-//    glTranslatef(trans.x, trans.y, trans.z);
-    
-//    glRotatef(-mCameraElevation, 1, 0, 0);
-//    glRotatef(-mCameraAzimuth, 0, 1, 0);
-    
-//    glRotatef(-90.0f, 1, 0, 0);
-//    glScalef(1.0, -1.0, 1.0);
-
 
 	float leftX   = -1;
 	float rightX  = 1;
@@ -161,9 +151,7 @@ void ReshapeCallback(int w, int h)
 
     glMatrixMode( GL_PROJECTION );
     glLoadIdentity();
-//	// Set up a perspective projection
     float aspect = (float) gWindowSizeX / (float) gWindowSizeY;
-//	gluPerspective(30.0f, aspectRatio, .1f, 100.0f);
     gluOrtho2D(-1*aspect, 1*aspect, -1, 1);
 
     glMatrixMode(GL_MODELVIEW);
@@ -190,13 +178,19 @@ void SpecialKeyCallback(int key, int x, int y)
 void KeyCallback(unsigned char key, int x, int y)
 {
     switch(key) {
-        case 's': {
+        case 's':
+        {
             //
             // Take a screenshot, and save as screenshot.jpg
             //
+            
+            char buf[64];
+            time_t t = time(NULL);
+            strftime(buf, 64, "%F %H-%M-%S", localtime(&t));
+            
             STImage* screenshot = new STImage(gWindowSizeX, gWindowSizeY);
             screenshot->Read(0,0);
-            screenshot->Save("screenshot.jpg");
+            screenshot->Save(std::string("screenshot ") + buf + ".jpg");
             delete screenshot;
         }
             break;
