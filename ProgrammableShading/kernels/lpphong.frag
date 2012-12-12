@@ -5,50 +5,56 @@
  */
 
 // The input image we will be filtering in this kernel.
-uniform sampler2D normalTex;
-uniform sampler2D envMapTex;
 
-varying vec3 modelPos;    // fragment position in model space
-varying vec2 texPos;      // fragment position in texture space
-varying vec3 lightSource; // light source position in model space
-varying vec3 normal;	  // fragment normal in model space
+struct Ray
+{
+    vec3 A;
+    vec3 D;
+};
 
-varying float displacement;
+struct Sphere
+{
+    vec3 c;
+    float r;
+};
+
+uniform vec3 c;
+uniform float r;
+uniform vec3 L;
+
+varying vec2 pixel;
+
+bool intersect_sphere(Ray r, Sphere s, out float t)
+{
+    float c=dot(s.c,s.c)-s.r*s.r;
+    float b=2.0
+    *dot(s.c,r.D);
+    float a=dot(r.D,r.D);
+    
+    float sqrt_qty = b*b-4.0*a*c;
+    
+    if(sqrt_qty < 0.0)
+        return false;
+    else
+    {
+        t = min((-b+sqrt(sqrt_qty))/(2.0*a),
+                (-b-sqrt(sqrt_qty))/(2.0*a));
+        return true;
+    }
+}
 
 void main()
 {
-    // Sample from the normal map, if we're not doing displacement mapping
-    vec3 N;
-	if (displacement < 0.0)
-		N = 2.*texture2D(normalTex, texPos).xyz - 1.;
-	else
-		N = normal;
+    Ray ray;
+    ray.A = vec3(0, 0, 0);
+    ray.D = normalize(vec3(pixel.x, pixel.y, 1)-ray.A);
+    Sphere s;
+    s.c = c;
+    s.r = r;
+    float t = 0.0;
     
-    vec3 C = vec3(0.0, 0.0, 0.0); // camera position
-    
-    vec2 uv = vec2((N.x*0.5+1.0)/2.0, (N.y*0.5+1.0)/2.0);
-
-    vec3 ambientColor  = gl_LightSource[0].ambient.xyz;
-    vec3 diffuseColor  = gl_LightSource[0].diffuse.xyz;
-    vec3 specularColor = gl_LightSource[0].specular.xyz;
-    
-    vec3 materialColor = gl_FrontMaterial.ambient.xyz * texture2D(envMapTex, uv).xyz;
-    vec3 materialSpec  = gl_FrontMaterial.specular.xyz;
-    float shininess    = gl_FrontMaterial.shininess;
-    
-	/* CS 148 TODO: Implement the Phong reflectance model here */
-    
-    vec3 L = normalize(lightSource - modelPos);
-    vec3 R = normalize(reflect(L, N));
-    vec3 V = normalize(modelPos - C);
-    N = normalize(N);
-    
-    float L_N = max(0.0, dot(L, N));
-    float R_V = max(0.0, dot(R, V));
-    
-    vec3 I = materialColor*ambientColor +
-    L_N*materialColor*diffuseColor +
-    pow(R_V, shininess)*materialSpec*specularColor;
-    
-    gl_FragColor = vec4(clamp(I, 0.0, 1.0), 1.0);
+    if(intersect_sphere(ray, s, t))
+        gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);
+    else
+        gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
 }

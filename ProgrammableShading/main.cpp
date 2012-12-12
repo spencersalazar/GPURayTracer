@@ -28,23 +28,6 @@ std::string fragmentShader;
 std::string normalMap;
 std::string lightProbe;
 
-// Light source attributes
-static float specularLight[] = {1.00, 1.00, 1.00, 1.0};
-static float ambientLight[]  = {0.10, 0.10, 0.10, 1.0};
-static float diffuseLight[]  = {1.00, 1.00, 1.00, 1.0};
-
-// Material color properties
-static float materialAmbient[]  = { 0.8, 0.8, 1.0, 1.0 };
-static float materialDiffuse[]  = { 0.2, 0.2, 0.6, 1.0 };
-static float materialSpecular[] = { 0.8, 0.8, 0.8, 1.0 };
-static float shininess          = 8.0;  // # between 1 and 128.
-
-STImage   *surfaceNormImg;
-STTexture *surfaceNormTex;
-
-STImage   *lightProbeImg;
-STTexture *lightProbeTex;
-
 STShaderProgram *shader;
 
 // Stored mouse position for camera rotation, panning, and zoom.
@@ -72,54 +55,14 @@ void resetCamera()
 //
 void Setup()
 {
-    // Set up lighting variables in OpenGL
-    // Once we do this, we will be able to access them as built-in
-    // attributes in the shader (see examples of this in normalmap.frag)
-    glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
-    glLightfv(GL_LIGHT0, GL_SPECULAR,  specularLight);
-    glLightfv(GL_LIGHT0, GL_AMBIENT,   ambientLight);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE,   diffuseLight);
-
-    // Ditto with accessing material properties in the fragment
-    // and vertex shaders.
-    glMaterialfv(GL_FRONT, GL_AMBIENT,   materialAmbient);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE,   materialDiffuse);
-    glMaterialfv(GL_FRONT, GL_SPECULAR,  materialSpecular);
-    glMaterialfv(GL_FRONT, GL_SHININESS, &shininess);
-
-//    surfaceNormImg = new STImage(normalMap);
-//    surfaceNormTex = new STTexture(surfaceNormImg);
-
-//    lightProbeImg = new STImage(lightProbe);
-//    lightProbeTex = new STTexture(lightProbeImg);
-
     shader = new STShaderProgram();
     shader->LoadVertexShader(vertexShader);
     shader->LoadFragmentShader(fragmentShader);
 
-    resetCamera();
-    
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glEnable(GL_DEPTH_TEST);
-}
-
-/**
- * Camera adjustment methods
- */
-void AdjustCameraAzimuthBy(float delta)
-{
-    mCameraAzimuth += delta;
-}
-
-void AdjustCameraElevationBy(float delta)
-{
-    mCameraElevation += delta;
-}
-
-void AdjustCameraTranslationBy(STVector3 delta)
-{
-    mCameraTranslation += delta;
+    
+    gluOrtho2D(0, gWindowSizeX, 0, gWindowSizeY);
 }
 
 //
@@ -134,62 +77,40 @@ void DisplayCallback()
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    STVector3 trans = -mCameraTranslation;
+//    STVector3 trans = -mCameraTranslation;
+//    
+//    glTranslatef(trans.x, trans.y, trans.z);
     
-    glTranslatef(trans.x, trans.y, trans.z);
+//    glRotatef(-mCameraElevation, 1, 0, 0);
+//    glRotatef(-mCameraAzimuth, 0, 1, 0);
     
-    glRotatef(-mCameraElevation, 1, 0, 0);
-    glRotatef(-mCameraAzimuth, 0, 1, 0);
-    
-    glRotatef(-90.0f, 1, 0, 0);
-    glScalef(1.0, -1.0, 1.0);
+//    glRotatef(-90.0f, 1, 0, 0);
+//    glScalef(1.0, -1.0, 1.0);
 
 
-	float leftX   = -2;
-	float rightX  = -leftX;
+	float leftX   = -1;
+	float rightX  = 1;
 
 	float planeY  = 0;
 
-	float nearZ   = 0;
-	float farZ    = 4;
-
-    float lightPosition[] = {4.0, 10.0, farZ, 1.0};
-    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
-
-    // Texture 2: light probe environment map
-//    glActiveTexture(GL_TEXTURE1);
-//    lightProbeTex->Bind();
-
-    // Texture 1: surface normal map
-//    glActiveTexture(GL_TEXTURE0);
-//    surfaceNormTex->Bind();
-    
-    // Bind the textures we've loaded into openGl to
-    // the variable names we specify in the fragment
-    // shader.
-    shader->SetTexture("normalTex", 0);
-    shader->SetTexture("envMapTex", 1);
+    float aspect = ((float)gWindowSizeX)/((float)gWindowSizeY);
+	float nearZ   = -1*aspect;
+	float farZ    = 1*aspect;
 
     // Invoke the shader.  Now OpenGL will call our
     // shader programs on anything we draw.
     shader->Bind();
 
-    if (teapot)
+    shader->SetUniform("c", STVector3(0, 0, 2));
+    shader->SetUniform("r", 0.5);
+    shader->SetUniform("L", STVector3(gWindowSizeX/2, gWindowSizeY, 2));
+    
     {
-        // Draw a Utah Teapot
-        shader->SetUniform("teapot", 1.);
-        shader->SetUniform("t", g_t);
-        glutSolidTeapot(1);
-    }
-    else
-    {
-        shader->SetUniform("teapot", 0.);
-        shader->SetUniform("t", g_t);
         // Draw a coplanar quadrilateral on the y=0 plane.
         // This is the surface we will distort for the
         // assignment.
         glBegin(GL_QUADS);
-        glColor4f(.1, .1, .7, 1.0f);
+        glColor4f(1, 1, 0, 1.0f);
 
         // All vertices on the plane have the same normal
         glNormal3f(0.0f, 1.0f, 0.0f);
@@ -207,27 +128,22 @@ void DisplayCallback()
                 float z1 = t1 * (farZ - nearZ) + nearZ;
 
                 glTexCoord2f(s0, t0);
-                glVertex3f(x0, planeY, z0);
+                glVertex3f(x0, z0, planeY);
 
                 glTexCoord2f(s1, t0);
-                glVertex3f(x1, planeY, z0);
+                glVertex3f(x1, z0, planeY);
 
                 glTexCoord2f(s1, t1);
-                glVertex3f(x1, planeY,  z1);
+                glVertex3f(x1, z1,  planeY);
 
                 glTexCoord2f(s0, t1);
-                glVertex3f(x0,  planeY,  z1);
+                glVertex3f(x0,  z1,  planeY);
             }
 
         glEnd();
     }
     
     shader->UnBind();
-
-    glActiveTexture(GL_TEXTURE1);
-    lightProbeTex->UnBind();
-    glActiveTexture(GL_TEXTURE0);
-    surfaceNormTex->UnBind();
 
     glutSwapBuffers();
 }
@@ -245,9 +161,10 @@ void ReshapeCallback(int w, int h)
 
     glMatrixMode( GL_PROJECTION );
     glLoadIdentity();
-	// Set up a perspective projection
-    float aspectRatio = (float) gWindowSizeX / (float) gWindowSizeY;
-	gluPerspective(30.0f, aspectRatio, .1f, 100.0f);
+//	// Set up a perspective projection
+    float aspect = (float) gWindowSizeX / (float) gWindowSizeY;
+//	gluPerspective(30.0f, aspectRatio, .1f, 100.0f);
+    gluOrtho2D(-1*aspect, 1*aspect, -1, 1);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -257,16 +174,12 @@ void SpecialKeyCallback(int key, int x, int y)
 {
     switch(key) {
         case GLUT_KEY_LEFT:
-            AdjustCameraTranslationBy(STVector3(-0.2,0,0));
             break;
         case GLUT_KEY_RIGHT:
-            AdjustCameraTranslationBy(STVector3(0.2,0,0));
             break;
         case GLUT_KEY_DOWN:
-            AdjustCameraTranslationBy(STVector3(0,-0.2,0));
             break;
         case GLUT_KEY_UP:
-            AdjustCameraTranslationBy(STVector3(0,0.2,0));
             break;
         default:
             break;
@@ -291,7 +204,7 @@ void KeyCallback(unsigned char key, int x, int y)
             resetCamera();
             break;
         case 't':
-            teapot = !teapot;
+//            teapot = !teapot;
             break;
         case 'q':
             exit(0);
@@ -304,7 +217,7 @@ void KeyCallback(unsigned char key, int x, int y)
             break;
     }
     
-    // glutPostRedisplay();
+    glutPostRedisplay();
 }
 
 
@@ -333,35 +246,6 @@ void MouseCallback(int button, int state, int x, int y)
  /*/
 void MouseMotionCallback(int x, int y)
 {
-    if (gPreviousMouseX >= 0 && gPreviousMouseY >= 0)
-    {
-        //compute delta
-        float deltaX = x-gPreviousMouseX;
-        float deltaY = y-gPreviousMouseY;
-        gPreviousMouseX = x;
-        gPreviousMouseY = y;
-        
-        float zoomSensitivity = 0.2f;
-        float rotateSensitivity = 0.5f;
-        
-        //orbit or zoom
-        if (gMouseButton == GLUT_LEFT_BUTTON)
-        {
-            AdjustCameraAzimuthBy(-deltaX*rotateSensitivity);
-            AdjustCameraElevationBy(-deltaY*rotateSensitivity);
-            
-        } else if (gMouseButton == GLUT_RIGHT_BUTTON)
-        {
-            STVector3 zoom(0,0,deltaX);
-            AdjustCameraTranslationBy(zoom * zoomSensitivity);
-        }
-        
-    } else
-    {
-        gPreviousMouseX = x;
-        gPreviousMouseY = y;
-    }
-    
 }
 
 void TimerCallback(int i)
@@ -385,8 +269,6 @@ int main(int argc, char** argv)
 
 	vertexShader   = std::string(argv[1]);
 	fragmentShader = std::string(argv[2]);
-//	lightProbe     = std::string(argv[3]);
-//	normalMap      = std::string(argv[4]);
 
     //
     // Initialize GLUT.
@@ -421,6 +303,8 @@ int main(int argc, char** argv)
 
     Setup();
 
+    ReshapeCallback(640, 480);
+    
     glutDisplayFunc(DisplayCallback);
     glutReshapeFunc(ReshapeCallback);
     glutSpecialFunc(SpecialKeyCallback);
