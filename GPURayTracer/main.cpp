@@ -90,8 +90,8 @@ void DisplayCallback()
     // Invoke the shader.  Now OpenGL will call our
     // shader programs on anything we draw.
     shader->Bind();
-
-    float theta = -M_PI/2.0 + M_PI/8.0*sinf(g_t*2*M_PI*0.25);
+    
+    float theta = -M_PI/2.0 + M_PI/8.0*cosf(g_t*2*M_PI*0.25) * expf(-g_t/25.0);
     shader->SetUniform("c", STVector3(4*cosf(theta), 4+4*sinf(theta), 2));
     shader->SetUniform("r", 0.5);
     shader->SetUniform("L", STVector3(0.0, 1.0, 1.0));
@@ -118,30 +118,42 @@ void DisplayCallback()
         // All vertices on the plane have the same normal
         glNormal3f(0.0f, 1.0f, 0.0f);
 
-        for (int i = 0; i < XTesselationDepth; i++)
-            for (int j = 0; j < ZTesselationDepth; j++) {
-                float s0 = (float)  i      / (float) XTesselationDepth;
-                float s1 = (float) (i + 1) / (float) XTesselationDepth;
-                float x0 =  s0 * (rightX - leftX) + leftX;
-                float x1 =  s1 * (rightX - leftX) + leftX;
-
-                float t0 = (float) j       / (float) ZTesselationDepth;
-                float t1 = (float) (j + 1) / (float) ZTesselationDepth;
-                float z0 = t0 * (farZ - nearZ) + nearZ;
-                float z1 = t1 * (farZ - nearZ) + nearZ;
-
-                glTexCoord2f(s0, t0);
-                glVertex3f(x0, z0, planeY);
-
-                glTexCoord2f(s1, t0);
-                glVertex3f(x1, z0, planeY);
-
-                glTexCoord2f(s1, t1);
-                glVertex3f(x1, z1,  planeY);
-
-                glTexCoord2f(s0, t1);
-                glVertex3f(x0,  z1,  planeY);
-            }
+//        for (int i = 0; i < XTesselationDepth; i++)
+//            for (int j = 0; j < ZTesselationDepth; j++) {
+//                float s0 = (float)  i      / (float) XTesselationDepth;
+//                float s1 = (float) (i + 1) / (float) XTesselationDepth;
+//                float x0 =  s0 * (rightX - leftX) + leftX;
+//                float x1 =  s1 * (rightX - leftX) + leftX;
+//
+//                float t0 = (float) j       / (float) ZTesselationDepth;
+//                float t1 = (float) (j + 1) / (float) ZTesselationDepth;
+//                float z0 = t0 * (farZ - nearZ) + nearZ;
+//                float z1 = t1 * (farZ - nearZ) + nearZ;
+//
+//                glTexCoord2f(s0, t0);
+//                glVertex3f(x0, z0, planeY);
+//
+//                glTexCoord2f(s1, t0);
+//                glVertex3f(x1, z0, planeY);
+//
+//                glTexCoord2f(s1, t1);
+//                glVertex3f(x1, z1,  planeY);
+//
+//                glTexCoord2f(s0, t1);
+//                glVertex3f(x0,  z1,  planeY);
+//            }
+        
+        glTexCoord2f(0, 0);
+        glVertex3f(leftX, nearZ, planeY);
+        
+        glTexCoord2f(1, 0);
+        glVertex3f(rightX, nearZ, planeY);
+        
+        glTexCoord2f(1, 1);
+        glVertex3f(rightX, farZ,  planeY);
+        
+        glTexCoord2f(0, 1);
+        glVertex3f(leftX,  farZ,  planeY);
 
         glEnd();
     }
@@ -271,11 +283,18 @@ void usage()
 
 int main(int argc, char** argv)
 {
-	if (argc != 3)
+    if(argc >= 2)
+        vertexShader   = std::string(argv[1]);
+    else
+        vertexShader = "default.vert";
+    if(argc >= 3)
+        fragmentShader = std::string(argv[2]);
+    else
+        fragmentShader = "rt.frag";
+    
+	if (argc > 3)
 		usage();
 
-	vertexShader   = std::string(argv[1]);
-	fragmentShader = std::string(argv[2]);
 
     //
     // Initialize GLUT.

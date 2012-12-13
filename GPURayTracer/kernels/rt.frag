@@ -29,9 +29,7 @@ uniform vec3 L;
 
 varying vec2 pixel;
 
-float near_clip = 1.0;
-
-bool intersect_sphere(Ray r, Sphere s, out float t)
+bool intersect_sphere(Ray r, Sphere s, float near_clip, out float t)
 {
     float a = r.D.x*r.D.x + r.D.y*r.D.y + r.D.z*r.D.z;
     float b = 2.0*(r.D.x*(r.A.x-s.C.x)+r.D.y*(r.A.y-s.C.y)+r.D.z*(r.A.z-s.C.z));
@@ -82,7 +80,7 @@ bool trace(Ray ray, out vec4 color)
     {
         float t = 0.0;
         
-        if(intersect_sphere(ray, spheres[i], t))
+        if(intersect_sphere(ray, spheres[i], 1.0, t))
         {
             if(t < min_t)
             {
@@ -95,8 +93,19 @@ bool trace(Ray ray, out vec4 color)
     if(sphere_index != -1)
     {
         float t = min_t;
-        
         vec3 P = ray.A+t*ray.D;
+
+        Ray toLight;
+        toLight.A = P;
+        toLight.D = normalize(L-P);
+        
+        for(int i = 0; i < numSpheres; i++)
+        {
+            float tL = 0.0;
+            if(i != sphere_index && intersect_sphere(toLight, spheres[i], 0.1, tL))
+                return false;
+        }
+        
         vec3 N = normalize(P-spheres[sphere_index].C);
         vec3 I = normalize(L-P);
         vec3 R = reflect(I, N);
