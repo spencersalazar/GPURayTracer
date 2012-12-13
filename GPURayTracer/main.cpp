@@ -286,11 +286,11 @@ int main(int argc, char** argv)
     if(argc >= 2)
         vertexShader   = std::string(argv[1]);
     else
-        vertexShader = "default.vert";
+        vertexShader = "kernels/default.vert";
     if(argc >= 3)
         fragmentShader = std::string(argv[2]);
     else
-        fragmentShader = "rt.frag";
+        fragmentShader = "kernels/rt.frag";
     
 	if (argc > 3)
 		usage();
