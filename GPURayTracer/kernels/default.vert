@@ -1,6 +1,5 @@
 // default.vert
 
-uniform float teapot;
 /*
   This simple GLSL vertex shader does exactly what 
   OpenGL would do -- It transforms the vertex positions

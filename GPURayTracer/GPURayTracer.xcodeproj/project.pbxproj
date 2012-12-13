@@ -44,11 +44,11 @@
 
 /* Begin PBXFileReference section */
 		08FB7796FE84155DC02AAC07 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		090E0F671662DBCE006AA727 /* default.vert */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; name = default.vert; path = kernels/default.vert; sourceTree = "<group>"; };
+		090E0F671662DBCE006AA727 /* default.vert */ = {isa = PBXFileReference; explicitFileType = sourcecode.glsl; name = default.vert; path = kernels/default.vert; sourceTree = "<group>"; };
 		090E0F681662DBCE006AA727 /* displacement.vert */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; name = displacement.vert; path = kernels/displacement.vert; sourceTree = "<group>"; };
 		090E0F691662DBCE006AA727 /* lightprobe.frag */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; name = lightprobe.frag; path = kernels/lightprobe.frag; sourceTree = "<group>"; };
 		090E0F6A1662DBCE006AA727 /* phong.frag */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; name = phong.frag; path = kernels/phong.frag; sourceTree = "<group>"; };
-		090E0F741665C5CF006AA727 /* lpphong.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = lpphong.frag; path = kernels/lpphong.frag; sourceTree = "<group>"; };
+		090E0F741665C5CF006AA727 /* lpphong.frag */ = {isa = PBXFileReference; explicitFileType = sourcecode.glsl; fileEncoding = 4; name = lpphong.frag; path = kernels/lpphong.frag; sourceTree = "<group>"; };
 		8DD76F6C0486A84900D96B5E /* GPURayTracer */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = GPURayTracer; sourceTree = BUILT_PRODUCTS_DIR; };
 		E019EAD40F436B9700EE6385 /* libst.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = libst.xcodeproj; path = ../libst/xcode/libst.xcodeproj; sourceTree = SOURCE_ROOT; };
 		E019EADE0F436BD800EE6385 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = /System/Library/Frameworks/GLUT.framework; sourceTree = "<absolute>"; };

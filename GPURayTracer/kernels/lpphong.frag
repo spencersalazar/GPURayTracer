@@ -14,9 +14,14 @@ struct Ray
 
 struct Sphere
 {
-    vec3 c;
+    vec3 C;
     float r;
+    vec4 color;
+    float shininess;
 };
+
+uniform Sphere spheres[10];
+uniform int numSpheres;
 
 uniform vec3 c;
 uniform float r;
@@ -29,8 +34,8 @@ float near_clip = 1.0;
 bool intersect_sphere(Ray r, Sphere s, out float t)
 {
     float a = r.D.x*r.D.x + r.D.y*r.D.y + r.D.z*r.D.z;
-    float b = 2.0*(r.D.x*(r.A.x-s.c.x)+r.D.y*(r.A.y-s.c.y)+r.D.z*(r.A.z-s.c.z));
-    float c = (r.A.x-s.c.x)*(r.A.x-s.c.x) + (r.A.y-s.c.y)*(r.A.y-s.c.y) + (r.A.z-s.c.z)*(r.A.z-s.c.z) + -s.r*s.r;
+    float b = 2.0*(r.D.x*(r.A.x-s.C.x)+r.D.y*(r.A.y-s.C.y)+r.D.z*(r.A.z-s.C.z));
+    float c = (r.A.x-s.C.x)*(r.A.x-s.C.x) + (r.A.y-s.C.y)*(r.A.y-s.C.y) + (r.A.z-s.C.z)*(r.A.z-s.C.z) + -s.r*s.r;
 
     float discriminant = b*b-4.0*a*c;
     
@@ -71,23 +76,34 @@ bool intersect_sphere(Ray r, Sphere s, out float t)
 
 bool trace(Ray ray, out vec4 color)
 {
-    Sphere sphere;
-    sphere.c = c;
-    sphere.r = r;
-    vec4 surfaceColor = vec4(1.0, 1.0, 0.0, 1.0);
-    float t = 0.0;
-    float shininess = 128.0;
-    
-    if(intersect_sphere(ray, sphere, t))
+    int sphere_index = -1;
+    float min_t = 1000.0;
+    for(int i = 0; i < numSpheres; i++)
     {
+        float t = 0.0;
+        
+        if(intersect_sphere(ray, spheres[i], t))
+        {
+            if(t < min_t)
+            {
+                min_t = t;
+                sphere_index = i;
+            }
+        }
+    }
+    
+    if(sphere_index != -1)
+    {
+        float t = min_t;
+        
         vec3 P = ray.A+t*ray.D;
-        vec3 N = normalize(P-sphere.c);
+        vec3 N = normalize(P-spheres[sphere_index].C);
         vec3 I = normalize(L-P);
         vec3 R = reflect(I, N);
         vec3 V = normalize(P-ray.A);
         
-        vec4 diffuse = surfaceColor * max(0.0,dot(I,N));
-        vec4 specular = vec4(1.0) * pow(max(0.0,dot(R,V)),shininess);
+        vec4 diffuse = spheres[sphere_index].color * max(0.0,dot(I,N));
+        vec4 specular = vec4(1.0) * pow(max(0.0,dot(R,V)), spheres[sphere_index].shininess);
         color = diffuse + specular;
         
         return true;

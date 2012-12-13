@@ -91,9 +91,22 @@ void DisplayCallback()
     // shader programs on anything we draw.
     shader->Bind();
 
-    shader->SetUniform("c", STVector3(sinf(g_t*2*M_PI*0.25), 0, 2));
+    float theta = -M_PI/2.0 + M_PI/8.0*sinf(g_t*2*M_PI*0.25);
+    shader->SetUniform("c", STVector3(4*cosf(theta), 4+4*sinf(theta), 2));
     shader->SetUniform("r", 0.5);
-    shader->SetUniform("L", STVector3(0.0, 1.0, 0.5));
+    shader->SetUniform("L", STVector3(0.0, 1.0, 1.0));
+    
+    shader->SetUniform("spheres[0].C", STVector3(4*cosf(theta), 4+4*sinf(theta), 2));
+    shader->SetUniform("spheres[0].r", 0.5);
+    shader->SetUniform("spheres[0].color", STColor4f(1.0, 1.0, 0.0, 1.0));
+    shader->SetUniform("spheres[0].shininess", 64.0);
+    
+    shader->SetUniform("spheres[1].C", STVector3(0, -5, 2));
+    shader->SetUniform("spheres[1].r", 4);
+    shader->SetUniform("spheres[1].color", STColor4f(1.0, 0.0, 1.0, 1.0));
+    shader->SetUniform("spheres[1].shininess", 64.0);
+    
+    glUniform1i(glGetUniformLocation(shader->programid, "numSpheres"), 2);
     
     {
         // Draw a coplanar quadrilateral on the y=0 plane.
@@ -271,7 +284,7 @@ int main(int argc, char** argv)
     glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
     glutInitWindowPosition(20, 20);
     glutInitWindowSize(640, 480);
-    glutCreateWindow("CS148 Assignment 7");
+    glutCreateWindow("GPU Ray Tracer");
     
     //
     // Initialize GLEW.

@@ -47,14 +47,14 @@ public:
     void SetUniform(const std::string& name, const STColor3f& value);
     void SetUniform(const std::string& name, const STColor4f& value);
 
+    // OpenGL program object id.
+    unsigned int programid;
+    
 private:
     //
     // Helper routine - get the location for a uniform shader parameter.
     //
     GLint GetUniformLocation(const std::string& name);
-
-    // OpenGL program object id.
-    unsigned int programid;
 
     struct UnboundTexture {
         GLint location;
