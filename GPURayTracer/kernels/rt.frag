@@ -19,6 +19,8 @@ struct Sphere
     vec4 color;
     float shininess;
     float reflectiveness;
+    float diffuse;
+    float specular;
 };
 
 struct PointLight
@@ -190,8 +192,8 @@ bool trace(Ray ray, out vec4 color, int depth)
                 vec3 R = reflect(I, N);
                 vec3 V = normalize(P-ray.A);
                 
-                vec4 diffuse = sphere.color * lights[l].diffuseColor * max(0.0,dot(I,N));
-                vec4 specular = lights[l].specularColor * pow(max(0.0,dot(R,V)), sphere.shininess);
+                vec4 diffuse = sphere.diffuse * sphere.color * lights[l].diffuseColor * max(0.0,dot(I,N));
+                vec4 specular = sphere.specular * lights[l].specularColor * pow(max(0.0,dot(R,V)), sphere.shininess);
                 color += diffuse + specular;
             }
         }
