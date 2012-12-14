@@ -92,21 +92,46 @@ void DisplayCallback()
     shader->Bind();
     
     float theta = -M_PI/2.0 + M_PI/8.0*cosf(g_t*2*M_PI*0.25) * expf(-g_t/25.0);
-    shader->SetUniform("c", STVector3(4*cosf(theta), 4+4*sinf(theta), 2));
-    shader->SetUniform("r", 0.5);
-    shader->SetUniform("L", STVector3(0.0, 1.0, 1.0));
     
-    shader->SetUniform("spheres[0].C", STVector3(4*cosf(theta), 4+4*sinf(theta), 2));
+    shader->SetUniform("spheres[0].C", STVector3(4*cosf(theta), 4.5+4*sinf(theta), 2));
     shader->SetUniform("spheres[0].r", 0.5);
     shader->SetUniform("spheres[0].color", STColor4f(1.0, 1.0, 0.0, 1.0));
     shader->SetUniform("spheres[0].shininess", 64.0);
+    shader->SetUniform("spheres[0].reflectiveness", 0.1);
     
-    shader->SetUniform("spheres[1].C", STVector3(0, -5, 2));
-    shader->SetUniform("spheres[1].r", 4);
-    shader->SetUniform("spheres[1].color", STColor4f(1.0, 0.0, 1.0, 1.0));
-    shader->SetUniform("spheres[1].shininess", 64.0);
+    shader->SetUniform("spheres[1].C", STVector3(0, -2.5, 2));
+    shader->SetUniform("spheres[1].r", 2);
+    shader->SetUniform("spheres[1].color", STColor4f(0.5, 0.0, 0.0, 1.0));
+    shader->SetUniform("spheres[1].shininess", 5.0);
+    shader->SetUniform("spheres[1].reflectiveness", 0.5);
+    
+//    shader->SetUniform("spheres[2].C", STVector3(0, 0, 2));
+//    shader->SetUniform("spheres[2].r", 0.5);
+//    shader->SetUniform("spheres[2].color", STColor4f(1.0, 1.0, 0.0, 1.0));
+//    shader->SetUniform("spheres[2].shininess", 64.0);
     
     glUniform1i(glGetUniformLocation(shader->programid, "numSpheres"), 2);
+    
+    shader->SetUniform("lights[0].position", STVector3(1.0, 1.0, 1.0));
+    shader->SetUniform("lights[0].diffuseColor", STColor4f(0.5, 0.5, 0.5, 1.0));
+    shader->SetUniform("lights[0].specularColor", STColor4f(0.5, 0.5, 0.5, 1.0));
+    
+    shader->SetUniform("lights[1].position", STVector3(-1.0, 1.0, 1.0));
+    shader->SetUniform("lights[1].diffuseColor", STColor4f(0.5, 0.5, 0.5, 1.0));
+    shader->SetUniform("lights[1].specularColor", STColor4f(0.5, 0.5, 0.5, 1.0));
+    
+    shader->SetUniform("lights[2].position", STVector3(0.5, 1.0, 1.0));
+    shader->SetUniform("lights[2].diffuseColor", STColor4f(0.5, 0.5, 0.5, 1.0));
+    shader->SetUniform("lights[2].specularColor", STColor4f(0.5, 0.5, 0.5, 1.0));
+    
+    shader->SetUniform("lights[3].position", STVector3(0.0, -1.0, 1.0));
+    shader->SetUniform("lights[3].diffuseColor", STColor4f(0.5, 0.5, 0.5, 1.0));
+    shader->SetUniform("lights[3].specularColor", STColor4f(0.5, 0.5, 0.5, 1.0));
+    
+    glUniform1i(glGetUniformLocation(shader->programid, "numLights"), 4);
+
+//    glUniform1i(glGetUniformLocation(shader->programid, "depth_max"), 2);
+
     
     {
         // Draw a coplanar quadrilateral on the y=0 plane.

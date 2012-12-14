@@ -18,14 +18,23 @@ struct Sphere
     float r;
     vec4 color;
     float shininess;
+    float reflectiveness;
+};
+
+struct PointLight
+{
+    vec3 position;
+    vec4 diffuseColor;
+    vec4 specularColor;
 };
 
 uniform Sphere spheres[10];
 uniform int numSpheres;
 
-uniform vec3 c;
-uniform float r;
-uniform vec3 L;
+uniform PointLight lights[4];
+uniform int numLights;
+
+int depth_max = 2;
 
 varying vec2 pixel;
 
@@ -45,34 +54,15 @@ bool intersect_sphere(Ray r, Sphere s, float near_clip, out float t)
         float t1 = (-b+sqrt_qty)/(2.0*a);
         float t2 = (-b-sqrt_qty)/(2.0*a);
         
-        if(t1 > near_clip)
-        {
-            if(t2 > near_clip)
-            {
-                t = min(t1, t2);
-            }
-            else
-            {
-                t = t1;
-            }
-        }
-        else
-        {
-            if(t2 > near_clip)
-            {
-                t = t2;
-            }
-            else
-            {
-                return false;
-            }
-        }
+        // this is a branch free way of calculating the following:
+        // t = smaller of (t1,t2) that is still greater than near_clip
+        t = float(t1>near_clip && t1<t2)*t1 + float(t2>near_clip && t2<t1)*t2;
         
-        return true;
+        return t1>near_clip || t2>near_clip;
     }
 }
 
-bool trace(Ray ray, out vec4 color)
+bool trace2(Ray ray, out vec4 color, int depth)
 {
     int sphere_index = -1;
     float min_t = 1000.0;
@@ -80,40 +70,142 @@ bool trace(Ray ray, out vec4 color)
     {
         float t = 0.0;
         
-        if(intersect_sphere(ray, spheres[i], 1.0, t))
+        if(intersect_sphere(ray, spheres[i], 0.1, t) && t < min_t)
         {
-            if(t < min_t)
-            {
-                min_t = t;
-                sphere_index = i;
-            }
+            min_t = t;
+            sphere_index = i;
         }
     }
     
     if(sphere_index != -1)
     {
-        float t = min_t;
-        vec3 P = ray.A+t*ray.D;
-
-        Ray toLight;
-        toLight.A = P;
-        toLight.D = normalize(L-P);
+        color = vec4(0, 0, 0, 0);
         
-        for(int i = 0; i < numSpheres; i++)
+        Sphere sphere = spheres[sphere_index];
+        
+        float t = min_t;
+        
+        vec3 P = ray.A+t*ray.D;
+        vec3 N = normalize(P-sphere.C);
+        
+        for(int l = 0; l < numLights; l++)
         {
-            float tL = 0.0;
-            if(i != sphere_index && intersect_sphere(toLight, spheres[i], 0.1, tL))
-                return false;
+            Ray toLight;
+            toLight.A = P;
+            toLight.D = normalize(lights[l].position-P);
+            
+            bool skip_light = false;
+            
+            for(int i = 0; i < numSpheres; i++)
+            {
+                float tL = 0.0;
+                if(i != sphere_index && intersect_sphere(toLight, spheres[i], 0.1, tL))
+                {
+                    skip_light = true;
+                    break;
+                }
+            }
+            
+            if(!skip_light)
+            {
+                vec3 I = normalize(lights[l].position-P);
+                vec3 R = reflect(I, N);
+                vec3 V = normalize(P-ray.A);
+                
+                vec4 diffuse = sphere.color * lights[l].diffuseColor * max(0.0,dot(I,N));
+                vec4 specular = lights[l].specularColor * pow(max(0.0,dot(R,V)), sphere.shininess);
+                color += diffuse + specular;
+            }
         }
         
-        vec3 N = normalize(P-spheres[sphere_index].C);
-        vec3 I = normalize(L-P);
-        vec3 R = reflect(I, N);
-        vec3 V = normalize(P-ray.A);
+//        if(sphere.reflectiveness > 0.0)
+//        {
+//            Ray reflector;
+//            reflector.A = P;
+//            reflector.D = reflect(normalize(P-ray.A), N);
+//            
+//            vec4 reflectColor = vec4(0, 0, 0, 0);
+//            //            if(trace(reflector, reflectColor, depth+1))
+//            //                color += clamp(reflectColor*sphere.reflectiveness, 0.0, 1.0);
+//        }
         
-        vec4 diffuse = spheres[sphere_index].color * max(0.0,dot(I,N));
-        vec4 specular = vec4(1.0) * pow(max(0.0,dot(R,V)), spheres[sphere_index].shininess);
-        color = diffuse + specular;
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool trace(Ray ray, out vec4 color, int depth)
+{
+    if(depth > depth_max)
+        return false;
+    
+    int sphere_index = -1;
+    float min_t = 1000.0;
+    for(int i = 0; i < numSpheres; i++)
+    {
+        float t = 0.0;
+        
+        if(intersect_sphere(ray, spheres[i], 1.0, t) && t < min_t)
+        {
+            min_t = t;
+            sphere_index = i;
+        }
+    }
+    
+    if(sphere_index != -1)
+    {
+        color = vec4(0, 0, 0, 0);
+        
+        Sphere sphere = spheres[sphere_index];
+        
+        float t = min_t;
+        
+        vec3 P = ray.A+t*ray.D;
+        vec3 N = normalize(P-sphere.C);
+        
+        for(int l = 0; l < numLights; l++)
+        {
+            Ray toLight;
+            toLight.A = P;
+            toLight.D = normalize(lights[l].position-P);
+            
+            bool skip_light = false;
+            
+            for(int i = 0; i < numSpheres; i++)
+            {
+                float tL = 0.0;
+                if(i != sphere_index && intersect_sphere(toLight, spheres[i], 0.1, tL))
+                {
+                    skip_light = true;
+                    break;
+                }
+            }
+            
+            if(!skip_light)
+            {
+                vec3 I = normalize(lights[l].position-P);
+                vec3 R = reflect(I, N);
+                vec3 V = normalize(P-ray.A);
+                
+                vec4 diffuse = sphere.color * lights[l].diffuseColor * max(0.0,dot(I,N));
+                vec4 specular = lights[l].specularColor * pow(max(0.0,dot(R,V)), sphere.shininess);
+                color += diffuse + specular;
+            }
+        }
+        
+        if(sphere.reflectiveness > 0.0)
+        {
+            Ray reflector;
+            reflector.A = P;
+            reflector.D = reflect(normalize(P-ray.A), N);
+            
+            vec4 reflectColor = vec4(0, 0, 0, 0);
+            if(trace2(reflector, reflectColor, depth+1))
+                color += clamp(reflectColor*sphere.reflectiveness, 0.0, 1.0);
+        }
         
         return true;
     }
@@ -130,7 +222,7 @@ void main()
     ray.D = normalize(vec3(pixel.x, pixel.y, 1)-ray.A);
     
     vec4 color;
-    if(trace(ray, color))
+    if(trace(ray, color, 1))
         gl_FragColor = clamp(color, 0.0, 1.0);
     else
         gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
