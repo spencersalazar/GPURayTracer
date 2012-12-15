@@ -6,6 +6,8 @@
 
 // The input image we will be filtering in this kernel.
 
+#version 120
+
 struct Ray
 {
     vec3 A;
@@ -23,6 +25,16 @@ struct Sphere
     float specular;
 };
 
+struct Tri
+{
+    vec3 v[3];
+    vec4 color;
+    float shininess;
+    float reflectiveness;
+    float diffuse;
+    float specular;
+};
+
 struct PointLight
 {
     vec3 position;
@@ -32,6 +44,8 @@ struct PointLight
 
 uniform Sphere spheres[10];
 uniform int numSpheres;
+uniform Tri tris[10];
+uniform int numTris;
 
 uniform PointLight lights[4];
 uniform int numLights;
@@ -64,28 +78,74 @@ bool intersect_sphere(Ray r, Sphere s, float near_clip, out float t)
     }
 }
 
-bool trace2(Ray ray, out vec4 color, int depth)
+bool intersect_tri(Ray ray, Tri tri, float near_clip, out float t, out float beta, out float gamma)
 {
-    int sphere_index = -1;
+    vec3 x0 = -ray.D; vec3 x1 = tri.v[1]-tri.v[0]; vec3 x2 = tri.v[2]-tri.v[0];
+    float det = dot(x0, cross(x1, x2));
+    
+    if(det > 0.0001)
+    {
+        mat3 inv = (mat3(cross(x1,x2), cross(x2,x0), cross(x0,x1)))/det;
+        vec3 result = (ray.A - tri.v[0]) * inv;
+        t = result.x;
+        beta = result.y;
+        gamma = result.z;
+    }
+    
+    return det > 0.0001 && beta >= 0.0 && gamma >= 0.0 && (beta+gamma) <= 1.0;
+}
+
+bool intersect(Ray ray, float near_clip, out float t, out int sphere_index, out int tri_index)
+{
+    sphere_index = -1;
     float min_t = 1000.0;
     for(int i = 0; i < numSpheres; i++)
     {
         float t = 0.0;
         
-        if(intersect_sphere(ray, spheres[i], 0.1, t) && t < min_t)
+        if(intersect_sphere(ray, spheres[i], near_clip, t) && t < min_t)
         {
             min_t = t;
             sphere_index = i;
         }
     }
     
+    float beta = 0.0;
+    float gamma = 0.0;
+    tri_index = -1;
+    for(int i = 0; i < numTris; i++)
+    {
+        float t = 0.0;
+        
+        if(intersect_tri(ray, tris[i], near_clip, t, beta, gamma) && t < min_t)
+        {
+            min_t = t;
+            tri_index = i;
+            sphere_index = -1;
+        }
+    }
+    
+    t = min_t;
+    
+    return sphere_index != -1 || tri_index != -1;
+}
+
+bool trace2(Ray ray, out vec4 color, int depth)
+{
+    if(depth > depth_max)
+        return false;
+    
+    int sphere_index = -1;
+    int tri_index = -1;
+    float t = 0.0;
+    
+    intersect(ray, 0.1, t, sphere_index, tri_index);
+    
     if(sphere_index != -1)
     {
         color = vec4(0, 0, 0, 0);
         
         Sphere sphere = spheres[sphere_index];
-        
-        float t = min_t;
         
         vec3 P = ray.A+t*ray.D;
         vec3 N = normalize(P-sphere.C);
@@ -96,26 +156,17 @@ bool trace2(Ray ray, out vec4 color, int depth)
             toLight.A = P;
             toLight.D = normalize(lights[l].position-P);
             
-            bool skip_light = false;
+            float tL = 0.0;
+            int tmp_sphereIndex, tmp_triIndex;
             
-            for(int i = 0; i < numSpheres; i++)
-            {
-                float tL = 0.0;
-                if(i != sphere_index && intersect_sphere(toLight, spheres[i], 0.1, tL))
-                {
-                    skip_light = true;
-                    break;
-                }
-            }
-            
-            if(!skip_light)
+            if(!intersect(toLight, 0.1, tL, tmp_sphereIndex, tmp_triIndex))
             {
                 vec3 I = normalize(lights[l].position-P);
                 vec3 R = reflect(I, N);
                 vec3 V = normalize(P-ray.A);
                 
-                vec4 diffuse = sphere.color * lights[l].diffuseColor * max(0.0,dot(I,N));
-                vec4 specular = lights[l].specularColor * pow(max(0.0,dot(R,V)), sphere.shininess);
+                vec4 diffuse = sphere.diffuse * sphere.color * lights[l].diffuseColor * max(0.0,dot(I,N));
+                vec4 specular = sphere.specular * lights[l].specularColor * pow(max(0.0,dot(R,V)), sphere.shininess);
                 color += diffuse + specular;
             }
         }
@@ -127,16 +178,53 @@ bool trace2(Ray ray, out vec4 color, int depth)
 //            reflector.D = reflect(normalize(P-ray.A), N);
 //            
 //            vec4 reflectColor = vec4(0, 0, 0, 0);
-//            //            if(trace(reflector, reflectColor, depth+1))
-//            //                color += clamp(reflectColor*sphere.reflectiveness, 0.0, 1.0);
+//            if(trace2(reflector, reflectColor, depth+1))
+//                color += clamp(reflectColor*sphere.reflectiveness, 0.0, 1.0);
 //        }
-        
-        return true;
     }
-    else
+    if(tri_index != -1)
     {
-        return false;
+        color = vec4(0, 0, 0, 0);
+        
+        Tri tri = tris[tri_index];
+        
+        vec3 P = ray.A+t*ray.D;
+        vec3 N = normalize(cross(tri.v[1]-tri.v[0], tri.v[2]-tri.v[0]));
+        
+        for(int l = 0; l < numLights; l++)
+        {
+            Ray toLight;
+            toLight.A = P;
+            toLight.D = normalize(lights[l].position-P);
+            
+            float tL = 0.0;
+            int tmp_sphereIndex, tmp_triIndex;
+            
+            if(!intersect(toLight, 0.1, tL, tmp_sphereIndex, tmp_triIndex))
+            {
+                vec3 I = normalize(lights[l].position-P);
+                vec3 R = reflect(I, N);
+                vec3 V = normalize(P-ray.A);
+                
+                vec4 diffuse = tri.diffuse * tri.color * lights[l].diffuseColor * max(0.0,dot(I,N));
+                vec4 specular = tri.specular * lights[l].specularColor * pow(max(0.0,dot(R,V)), tri.shininess);
+                color += diffuse + specular;
+            }
+        }
+        
+//        if(tri.reflectiveness > 0.0)
+//        {
+//            Ray reflector;
+//            reflector.A = P;
+//            reflector.D = reflect(normalize(P-ray.A), N);
+//            
+//            vec4 reflectColor = vec4(0, 0, 0, 0);
+//            if(trace2(reflector, reflectColor, depth+1))
+//                color += clamp(reflectColor*sphere.reflectiveness, 0.0, 1.0);
+//        }
     }
+    
+    return tri_index != -1 || sphere_index != -1;
 }
 
 bool trace(Ray ray, out vec4 color, int depth)
@@ -145,25 +233,16 @@ bool trace(Ray ray, out vec4 color, int depth)
         return false;
     
     int sphere_index = -1;
-    float min_t = 1000.0;
-    for(int i = 0; i < numSpheres; i++)
-    {
-        float t = 0.0;
-        
-        if(intersect_sphere(ray, spheres[i], 1.0, t) && t < min_t)
-        {
-            min_t = t;
-            sphere_index = i;
-        }
-    }
+    int tri_index = -1;
+    float t = 0.0;
+    
+    intersect(ray, 0.1, t, sphere_index, tri_index);
     
     if(sphere_index != -1)
     {
         color = vec4(0, 0, 0, 0);
         
         Sphere sphere = spheres[sphere_index];
-        
-        float t = min_t;
         
         vec3 P = ray.A+t*ray.D;
         vec3 N = normalize(P-sphere.C);
@@ -174,19 +253,10 @@ bool trace(Ray ray, out vec4 color, int depth)
             toLight.A = P;
             toLight.D = normalize(lights[l].position-P);
             
-            bool skip_light = false;
+            float tL = 0.0;
+            int tmp_sphereIndex, tmp_triIndex;
             
-            for(int i = 0; i < numSpheres; i++)
-            {
-                float tL = 0.0;
-                if(i != sphere_index && intersect_sphere(toLight, spheres[i], 0.1, tL))
-                {
-                    skip_light = true;
-                    break;
-                }
-            }
-            
-            if(!skip_light)
+            if(!intersect(toLight, 0.1, tL, tmp_sphereIndex, tmp_triIndex))
             {
                 vec3 I = normalize(lights[l].position-P);
                 vec3 R = reflect(I, N);
@@ -208,13 +278,52 @@ bool trace(Ray ray, out vec4 color, int depth)
             if(trace2(reflector, reflectColor, depth+1))
                 color += clamp(reflectColor*sphere.reflectiveness, 0.0, 1.0);
         }
-        
-        return true;
     }
-    else
+    if(tri_index != -1)
     {
-        return false;
+        color = vec4(0, 0, 0, 0);
+        
+        Tri tri = tris[tri_index];
+        
+        vec3 P = ray.A+t*ray.D;
+        vec3 N = normalize(cross(tri.v[1]-tri.v[0], tri.v[2]-tri.v[0]));
+        
+        for(int l = 0; l < numLights; l++)
+        {
+            Ray toLight;
+            toLight.A = P;
+            toLight.D = normalize(lights[l].position-P);
+            
+            float tL = 0.0;
+            int tmp_sphereIndex, tmp_triIndex;
+            
+            if(!intersect(toLight, 0.1, tL, tmp_sphereIndex, tmp_triIndex))
+            {
+                vec3 I = normalize(lights[l].position-P);
+                vec3 R = reflect(I, N);
+                vec3 V = normalize(P-ray.A);
+                
+                vec4 diffuse = tri.diffuse * tri.color * lights[l].diffuseColor * max(0.0,dot(I,N));
+                vec4 specular = tri.specular * lights[l].specularColor * pow(max(0.0,dot(R,V)), tri.shininess);
+                color += diffuse + specular;
+            }
+        }
+        
+        if(tri.reflectiveness > 0.0)
+        {
+            Ray reflector;
+            reflector.A = P;
+            reflector.D = reflect(normalize(P-ray.A), N);
+            
+            vec4 reflectColor = vec4(0, 0, 0, 0);
+            if(trace2(reflector, reflectColor, depth+1))
+                color += clamp(reflectColor*tri.reflectiveness, 0.0, 1.0);
+        }
+//        
+//        color = vec4(1.0, 0.0, 0.0, 1.0);
     }
+    
+    return tri_index != -1 || sphere_index != -1;
 }
 
 void main()

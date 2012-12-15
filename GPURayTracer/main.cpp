@@ -98,20 +98,31 @@ void DisplayCallback()
     shader->SetUniform("spheres[0].specular", 1.0);
     shader->SetUniform("spheres[0].diffuse", 1.0);
     
-    shader->SetUniform("spheres[1].C", STVector3(0, -2.5+0.5*sinf(g_t*2*M_PI*0.1) * expf(-g_t/25.0), 2));
-    shader->SetUniform("spheres[1].r", 2);
-    shader->SetUniform("spheres[1].color", STColor4f(0.5, 0.0, 0.0, 1.0));
-    shader->SetUniform("spheres[1].shininess", 10.0);
-    shader->SetUniform("spheres[1].reflectiveness", 0.5);
-    shader->SetUniform("spheres[1].specular", 1.0);
-    shader->SetUniform("spheres[1].diffuse", 1.0);
+//    shader->SetUniform("spheres[1].C", STVector3(0, -2.5+0.5*sinf(g_t*2*M_PI*0.1) * expf(-g_t/25.0), 2));
+//    shader->SetUniform("spheres[1].r", 2);
+//    shader->SetUniform("spheres[1].color", STColor4f(0.5, 0.0, 0.0, 1.0));
+//    shader->SetUniform("spheres[1].shininess", 10.0);
+//    shader->SetUniform("spheres[1].reflectiveness", 0.5);
+//    shader->SetUniform("spheres[1].specular", 1.0);
+//    shader->SetUniform("spheres[1].diffuse", 1.0);
 
 //    shader->SetUniform("spheres[2].C", STVector3(0, 0, 2));
 //    shader->SetUniform("spheres[2].r", 0.5);
 //    shader->SetUniform("spheres[2].color", STColor4f(1.0, 1.0, 0.0, 1.0));
 //    shader->SetUniform("spheres[2].shininess", 64.0);
     
-    glUniform1i(glGetUniformLocation(shader->programid, "numSpheres"), 2);
+    glUniform1i(glGetUniformLocation(shader->programid, "numSpheres"), 1);
+    
+    shader->SetUniform("tris[0].v[0]", STVector3(-6, 0.5, 4));
+    shader->SetUniform("tris[0].v[1]", STVector3(6, 0.5, 4));
+    shader->SetUniform("tris[0].v[2]", STVector3(0, -3, 0));
+    shader->SetUniform("tris[0].color", STColor4f(0.5, 0.0, 0.0, 1.0));
+    shader->SetUniform("tris[0].shininess", 10.0);
+    shader->SetUniform("tris[0].reflectiveness", 0.5);
+    shader->SetUniform("tris[0].specular", 1.0);
+    shader->SetUniform("tris[0].diffuse", 1.0);
+    
+    glUniform1i(glGetUniformLocation(shader->programid, "numTris"), 1);
     
     shader->SetUniform("lights[0].position", STVector3(1.0, 1.0, 1.0));
     shader->SetUniform("lights[0].diffuseColor", STColor4f(0.75, 0.75, 0.75, 1.0));
@@ -121,11 +132,11 @@ void DisplayCallback()
     shader->SetUniform("lights[1].diffuseColor", STColor4f(0.75, 0.75, 0.75, 1.0));
     shader->SetUniform("lights[1].specularColor", STColor4f(0.75, 0.75, 0.75, 1.0));
     
-    shader->SetUniform("lights[2].position", STVector3(2.5, 0.5, 1.0));
+    shader->SetUniform("lights[2].position", STVector3(2.5, 0.5, 0.5));
     shader->SetUniform("lights[2].diffuseColor", STColor4f(0.5, 0.5, 0.5, 1.0));
     shader->SetUniform("lights[2].specularColor", STColor4f(0.5, 0.5, 0.5, 1.0));
     
-    shader->SetUniform("lights[3].position", STVector3(-2.5, 0.5, 1.0));
+    shader->SetUniform("lights[3].position", STVector3(-2.5, 0.5, 0.5));
     shader->SetUniform("lights[3].diffuseColor", STColor4f(0.5, 0.5, 0.5, 1.0));
     shader->SetUniform("lights[3].specularColor", STColor4f(0.5, 0.5, 0.5, 1.0));
     
