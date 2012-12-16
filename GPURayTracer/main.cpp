@@ -90,8 +90,8 @@ void DisplayCallback()
     
     float theta = -M_PI/2.0 + M_PI/8.0*cosf(g_t*2*M_PI*0.25) * expf(-g_t/25.0);
     
-    shader->SetUniform("spheres[0].C", STVector3(4*cosf(theta), 4.5+4*sinf(theta), 2));
-    shader->SetUniform("spheres[0].r", 0.5);
+    shader->SetUniform("spheres[0].C", STVector3(4.5*cosf(theta), 4.75+4.5*sinf(theta), 1.25));
+    shader->SetUniform("spheres[0].r", 0.3);
     shader->SetUniform("spheres[0].color", STColor4f(1.0, 1.0, 0.0, 1.0));
     shader->SetUniform("spheres[0].shininess", 64.0);
     shader->SetUniform("spheres[0].reflectiveness", 0.1);
@@ -113,9 +113,9 @@ void DisplayCallback()
     
     glUniform1i(glGetUniformLocation(shader->programid, "numSpheres"), 1);
     
-    shader->SetUniform("tris[0].v[0]", STVector3(-6, 0.5, 4));
-    shader->SetUniform("tris[0].v[1]", STVector3(6, 0.5, 4));
-    shader->SetUniform("tris[0].v[2]", STVector3(0, -3, 0));
+    shader->SetUniform("tris[0].v[0]", STVector3(-20, -0.25, 20));
+    shader->SetUniform("tris[0].v[1]", STVector3(20, -0.25, 20));
+    shader->SetUniform("tris[0].v[2]", STVector3(0, -0.25, -1));
     shader->SetUniform("tris[0].color", STColor4f(0.5, 0.0, 0.0, 1.0));
     shader->SetUniform("tris[0].shininess", 10.0);
     shader->SetUniform("tris[0].reflectiveness", 0.5);
